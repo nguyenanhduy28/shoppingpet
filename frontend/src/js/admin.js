@@ -81,14 +81,14 @@ async function fetchAdminProducts() {
             const tbody = document.getElementById('productTableBody');
             tbody.innerHTML = result.data.map(p => `
                 <tr>
-                    <td>${p.id}</td>
+                    <td>${p._id.slice(-6)}</td>
                     <td><img src="${p.image_url}" style="width:50px; height:50px; object-fit:cover; border-radius:4px;"></td>
                     <td>${p.name}</td>
                     <td>${formatPrice(p.price)}</td>
                     <td>${p.stock}</td>
                     <td>
-                        <button class="btn-sm btn-edit" onclick="editProduct(${p.id})">Sửa</button>
-                        <button class="btn-sm btn-delete" onclick="deleteProduct(${p.id})">Xóa</button>
+                        <button class="btn-sm btn-edit" onclick="editProduct('${p._id}')">Sửa</button>
+                        <button class="btn-sm btn-delete" onclick="deleteProduct('${p._id}')">Xóa</button>
                     </td>
                 </tr>
             `).join('');
@@ -111,7 +111,7 @@ async function loadCategorySelect() {
     const res = await fetch(CAT_API_URL);
     const result = await res.json();
     const select = document.getElementById('prodCategory');
-    select.innerHTML = result.data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    select.innerHTML = result.data.map(c => `<option value="${c._id}">${c.name}</option>`).join('');
 }
 
 document.getElementById('productForm').addEventListener('submit', async (e) => {
@@ -167,9 +167,9 @@ window.editProduct = async (id) => {
         const p = result.data;
         await showAddProductModal();
         document.getElementById('modalTitle').textContent = 'Chỉnh sửa sản phẩm';
-        document.getElementById('prodId').value = p.id;
+        document.getElementById('prodId').value = p._id;
         document.getElementById('prodName').value = p.name;
-        document.getElementById('prodCategory').value = p.category_id;
+        document.getElementById('prodCategory').value = p.category_id._id || p.category_id;
         document.getElementById('prodPrice').value = p.price;
         document.getElementById('prodStock').value = p.stock;
         document.getElementById('prodImageUrl').value = p.image_url;
@@ -189,13 +189,13 @@ async function fetchAdminOrders() {
             const tbody = document.getElementById('orderTableBody');
             tbody.innerHTML = result.data.map(o => `
                 <tr>
-                    <td>#${o.id}</td>
+                    <td>#${o._id.slice(-6)}</td>
                     <td>${o.user_name}<br><small>${o.user_email}</small></td>
                     <td>${formatPrice(o.total_price)}</td>
                     <td>${new Date(o.created_at).toLocaleDateString('vi-VN')}</td>
                     <td><span class="badge badge-${o.status.toLowerCase()}">${o.status}</span></td>
                     <td>
-                        <select onchange="updateStatus(${o.id}, this.value)" style="width: auto; padding: 5px;">
+                        <select onchange="updateStatus('${o._id}', this.value)" style="width: auto; padding: 5px;">
                             <option value="Pending" ${o.status === 'Pending' ? 'selected' : ''}>Chờ duyệt</option>
                             <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Đang giao</option>
                             <option value="Completed" ${o.status === 'Completed' ? 'selected' : ''}>Hoàn thành</option>
@@ -233,13 +233,13 @@ async function fetchAdminUsers() {
             const tbody = document.getElementById('userTableBody');
             tbody.innerHTML = result.data.map(u => `
                 <tr>
-                    <td>${u.id}</td>
+                    <td>${u._id.slice(-6)}</td>
                     <td>${u.full_name}</td>
                     <td>${u.email}</td>
                     <td>${new Date(u.created_at).toLocaleDateString('vi-VN')}</td>
                     <td>${u.is_banned ? '<span style="color:red">Bị khóa</span>' : '<span style="color:green">Hoạt động</span>'}</td>
                     <td>
-                        <button class="btn-sm ${u.is_banned ? 'btn-unban' : 'btn-ban'}" onclick="toggleBan(${u.id})">
+                        <button class="btn-sm ${u.is_banned ? 'btn-unban' : 'btn-ban'}" onclick="toggleBan('${u._id}')">
                             ${u.is_banned ? 'Mở khóa' : 'Khóa'}
                         </button>
                     </td>

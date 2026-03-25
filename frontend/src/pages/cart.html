@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="../css/styles.css">
     <style>
         .cart-container { padding: 40px 0; }
         .cart-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
@@ -30,12 +30,12 @@
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <div class="logo" onclick="location.href='index.html'" style="cursor:pointer">
+                <div class="logo" onclick="location.href='../../index.html'" style="cursor:pointer">
                     <span class="logo-icon">🐾</span>
                     <h1>ShopPet</h1>
                 </div>
                 <nav class="nav">
-                    <a href="index.html" class="nav-link">Sản phẩm</a>
+                    <a href="../../index.html" class="nav-link">Sản phẩm</a>
                     <a href="orders.html" class="nav-link">Đơn hàng</a>
                     <div id="authLinks" style="display: flex; gap: 15px;">
                         <a href="login.html" class="nav-link">Đăng nhập</a>
@@ -60,7 +60,7 @@
         </div>
     </main>
 
-    <script src="js/script.js"></script>
+    <script src="../js/script.js"></script>
     <script>
         // Special logic for cart page
         async function loadCart() {
@@ -92,7 +92,7 @@
                     <div class="empty-cart">
                         <h3>Giỏ hàng trống</h3>
                         <p>Hãy chọn cho mình những người bạn bốn chân thật đáng yêu nhé!</p>
-                        <button class="btn btn-primary" onclick="location.href='index.html'" style="margin-top:20px">Tiếp tục mua sắm</button>
+                        <button class="btn btn-primary" onclick="location.href='../../index.html'" style="margin-top:20px">Tiếp tục mua sắm</button>
                     </div>
                 `;
                 return;

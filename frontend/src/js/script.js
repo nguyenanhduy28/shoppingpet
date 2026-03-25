@@ -71,7 +71,7 @@ function renderProducts(products) {
     }
 
     productGrid.innerHTML = products.map(product => `
-        <div class="product-card" onclick="goToProductDetail(${product.id})">
+        <div class="product-card" onclick="goToProductDetail('${product._id}')">
             <img src="${product.image_url || 'https://via.placeholder.com/400x300?text=No+Image'}" alt="${product.name}" class="product-image">
             <div class="product-info">
                 <p class="product-category">${product.category_name}</p>
@@ -207,8 +207,8 @@ function renderProductDetail(product) {
                     <button class="quantity-btn" onclick="changeQuantity(1)">+</button>
                 </div>
                 
-                <button class="btn-add-cart" onclick="addToCart(${product.id}, '${product.name}')">🛒 Thêm vào giỏ hàng</button>
-                <button class="btn-back" onclick="location.href='index.html'">← Quay lại danh sách</button>
+                <button class="btn-add-cart" onclick="addToCart('${product._id}', '${product.name}')">🛒 Thêm vào giỏ hàng</button>
+                <button class="btn-back" onclick="location.href='../../index.html'">← Quay lại danh sách</button>
             </div>
         </div>
     `;
@@ -219,7 +219,7 @@ async function fetchRelatedProducts(category, currentId) {
         const response = await fetch(`${API_URL}/products?category=${category}&limit=4`);
         const result = await response.json();
         if (result.success) {
-            const relatedProducts = result.data.filter(p => p.id != currentId);
+            const relatedProducts = result.data.filter(p => p._id != currentId);
             renderRelatedProducts(relatedProducts);
         }
     } catch (err) {
@@ -232,7 +232,7 @@ function renderRelatedProducts(products) {
     if (!relatedGrid) return;
 
     relatedGrid.innerHTML = products.map(product => `
-        <div class="product-card" onclick="goToProductDetail(${product.id})">
+        <div class="product-card" onclick="goToProductDetail('${product._id}')">
             <img src="${product.image_url}" alt="${product.name}" class="product-image">
             <div class="product-info">
                 <p class="product-category">${product.category_name}</p>
@@ -325,7 +325,7 @@ function updateAuthUI() {
 window.logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.href = 'index.html';
+    window.location.href = '../../index.html';
 };
 
 // ==================== INITIALIZATION ====================
