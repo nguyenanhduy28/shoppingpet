@@ -90,11 +90,15 @@
 
         async function initCheckout() {
             const token = localStorage.getItem('token');
-            if (!token) { location.href = 'index.html'; return; }
+            if (!token) { location.href = '../../index.html'; return; }
 
-            // Get current profile to pre-fill
             try {
-                const resProfile = await fetch('http://127.0.0.1:5000/api/auth/profile', {
+                // Debug logs
+                console.log('API_URL:', typeof API_URL !== 'undefined' ? API_URL : 'UNDEFINED');
+                console.log('Token exists:', !!token);
+
+                // Get current profile to pre-fill
+                const resProfile = await fetch(`${API_URL}/auth/profile`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const profile = await resProfile.json();
@@ -105,26 +109,35 @@
                 }
 
                 // Get cart items for summary
-                const resCart = await fetch('http://127.0.0.1:5000/api/cart', {
+                const resCart = await fetch(`${API_URL}/cart`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const cart = await resCart.json();
                 if(cart.success) {
                     cartItems = cart.data;
+                    if (cartItems.length === 0) {
+                        alert('Giỏ hàng của bạn đang trống!');
+                        location.href = 'cart.html';
+                        return;
+                    }
                     renderSummary();
                 }
-            } catch (err) { console.error(err); }
+            } catch (err) { 
+                console.error('Checkout Init Error:', err);
+                alert('Lỗi kết nối máy chủ: ' + err.message);
+            }
         }
 
         function renderSummary() {
             const container = document.getElementById('summaryItems');
             total = 0;
             container.innerHTML = cartItems.map(item => {
-                total += item.subtotal;
+                const subtotal = item.subtotal || (item.price * item.quantity) || 0;
+                total += subtotal;
                 return `
                     <div class="item-row">
                         <span>${item.name} x ${item.quantity}</span>
-                        <span>${formatPrice(item.subtotal)}</span>
+                        <span>${formatPrice(subtotal)}</span>
                     </div>
                 `;
             }).join('');
@@ -140,7 +153,7 @@
             };
 
             try {
-                const response = await fetch('http://127.0.0.1:5000/api/orders', {
+                const response = await fetch(`${API_URL}/orders`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -151,13 +164,13 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    alert('Đặt hàng thành công! Mã đơn hàng của bạn là: #' + result.orderId);
+                    alert('Đặt hàng thành công! Mã đơn hàng của bạn là: #' + result.orderId.slice(-6));
                     location.href = 'orders.html';
                 } else {
                     alert('Lỗi: ' + result.message);
                 }
             } catch (err) {
-                console.error(err);
+                console.error('Order Submission Error:', err);
                 alert('Đã xảy ra lỗi khi đặt hàng.');
             }
         });

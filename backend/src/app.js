@@ -29,4 +29,9 @@ app.get('/', (req, res) => {
     res.send('Pet Shop API is running...');
 });
 
+// 404 Handler for API
+app.use((req, res) => {
+    res.status(404).json({ success: false, message: 'Route not found' });
+});
+
 module.exports = app;

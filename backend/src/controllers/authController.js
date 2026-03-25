@@ -81,3 +81,19 @@ exports.login = async (req, res) => {
 exports.logout = (req, res) => {
     res.status(200).json({ success: true, message: 'Đăng xuất thành công!' });
 };
+
+// @desc    Get current user profile
+// @route   GET /api/auth/profile
+// @access  Private
+exports.getProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('-password');
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'Người dùng không tồn tại!' });
+        }
+        res.status(200).json({ success: true, data: user });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Lỗi server!' });
+    }
+};

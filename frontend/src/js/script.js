@@ -124,7 +124,9 @@ function setupSearch() {
 }
 
 function goToProductDetail(productId) {
-    window.location.href = `product-detail.html?id=${productId}`;
+    const isRoot = !window.location.pathname.includes('src/pages/');
+    const path = isRoot ? 'src/pages/product-detail.html' : 'product-detail.html';
+    window.location.href = `${path}?id=${productId}`;
 }
 
 // ==================== PRODUCT DETAIL PAGE ====================
@@ -314,9 +316,12 @@ function updateAuthUI() {
     const token = localStorage.getItem('token');
 
     if (authLinks && user && token) {
+        const isRoot = !window.location.pathname.includes('src/pages/');
+        const adminPath = isRoot ? 'src/pages/admin.html' : 'admin.html';
+        
         authLinks.innerHTML = `
             <span class="nav-link" style="color: #333; font-weight: 600;">Chào, ${user.full_name.split(' ')[0]}!</span>
-            ${user.role === 'admin' ? '<a href="admin.html" class="nav-link" style="color: #ff6b6b;">Quản trị</a>' : ''}
+            ${user.role === 'admin' ? `<a href="${adminPath}" class="nav-link" style="color: #ff6b6b;">Quản trị</a>` : ''}
             <a href="#" class="nav-link" onclick="logout()">Đăng xuất</a>
         `;
     }

@@ -9,8 +9,14 @@ exports.getCart = async (req, res) => {
         const cartItems = await Cart.find({ user_id: req.user.id })
             .populate('product_id', 'name price image_url stock');
 
+        console.log(`Fetching cart for user: ${req.user.id}, found ${cartItems.length} items`);
+
         const data = cartItems.map(item => {
             const product = item.product_id;
+            if (!product) {
+                console.error(`Cart item ${item._id} has no associated product!`);
+                return null;
+            }
             return {
                 cart_id: item._id,
                 product_id: product._id,
@@ -21,10 +27,13 @@ exports.getCart = async (req, res) => {
                 stock: product.stock,
                 subtotal: item.quantity * product.price
             };
-        });
+        }).filter(item => item !== null);
+
+        const totalPrice = data.reduce((sum, item) => sum + item.subtotal, 0);
 
         res.status(200).json({
             success: true,
+            total_price: totalPrice,
             data
         });
     } catch (err) {

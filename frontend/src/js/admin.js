@@ -9,7 +9,7 @@ function checkAdminAuth() {
 
     if (!token || !user || user.role !== 'admin') {
         alert('Bạn không có quyền truy cập trang quản trị!');
-        window.location.href = 'index.html';
+        window.location.href = '../../index.html';
         return false;
     }
     document.getElementById('adminName').textContent = user.full_name;

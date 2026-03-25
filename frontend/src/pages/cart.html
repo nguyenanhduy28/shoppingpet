@@ -100,7 +100,8 @@
 
             let total = 0;
             const itemsHtml = items.map(item => {
-                total += item.subtotal;
+                const subtotal = item.subtotal || (item.price * item.quantity) || 0;
+                total += subtotal;
                 return `
                     <tr>
                         <td>
@@ -114,11 +115,11 @@
                         </td>
                         <td>
                             <input type="number" class="qty-input" value="${item.quantity}" min="1" max="${item.stock}" 
-                                onchange="updateQty(${item.cart_id}, this.value)">
+                                onchange="updateQty('${item.cart_id}', this.value)">
                         </td>
-                        <td>${formatPrice(item.subtotal)}</td>
+                        <td>${formatPrice(subtotal)}</td>
                         <td>
-                            <button class="btn-remove" onclick="removeItem(${item.cart_id})">Xóa</button>
+                            <button class="btn-remove" onclick="removeItem('${item.cart_id}')">Xóa</button>
                         </td>
                     </tr>
                 `;

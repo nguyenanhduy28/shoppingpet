@@ -10,77 +10,69 @@ const Product = require('../models/Product');
 exports.createOrder = async (req, res) => {
     const { shipping_address, phone } = req.body;
 
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
     try {
+        console.log(`Creating order for user: ${req.user.id}`);
+
         // 1. Get cart items to calculate total and check stock
         const cartItems = await Cart.find({ user_id: req.user.id })
-            .populate('product_id', 'price stock name')
-            .session(session);
+            .populate('product_id', 'price stock name');
 
         if (cartItems.length === 0) {
-            await session.abortTransaction();
-            session.endSession();
-            return res.status(400).json({ message: 'Cart is empty' });
+            return res.status(400).json({ success: false, message: 'Giỏ hàng trống!' });
         }
 
         // 2. Calculate total price and check stock
         let totalPrice = 0;
         for (const item of cartItems) {
             const product = item.product_id;
+            if (!product) continue;
             if (product.stock < item.quantity) {
-                await session.abortTransaction();
-                session.endSession();
-                return res.status(400).json({ message: `Insufficient stock for ${product.name}` });
+                return res.status(400).json({ success: false, message: `Sản phẩm ${product.name} không đủ số lượng trong kho!` });
             }
             totalPrice += product.price * item.quantity;
         }
 
         // 3. Create Order
-        const [order] = await Order.create([{
+        const order = await Order.create({
             user_id: req.user.id,
             total_price: totalPrice,
             status: 'Pending',
             shipping_address,
             phone
-        }], { session });
+        });
 
         // 4. Create Order Details and Update Stock
         for (const item of cartItems) {
             const product = item.product_id;
+            if (!product) continue;
 
-            await OrderDetail.create([{
+            await OrderDetail.create({
                 order_id: order._id,
                 product_id: product._id,
                 quantity: item.quantity,
                 price: product.price
-            }], { session });
+            });
 
             await Product.findByIdAndUpdate(
                 product._id,
-                { $inc: { stock: -item.quantity } },
-                { session }
+                { $inc: { stock: -item.quantity } }
             );
         }
 
         // 5. Clear Cart
-        await Cart.deleteMany({ user_id: req.user.id }).session(session);
+        await Cart.deleteMany({ user_id: req.user.id });
 
-        await session.commitTransaction();
-        session.endSession();
+        console.log(`Order ${order._id} created successfully`);
 
         res.status(201).json({
             success: true,
-            message: 'Order created successfully',
+            message: 'Đặt hàng thành công!',
             orderId: order._id
         });
 
     } catch (err) {
-        await session.abortTransaction();
-        session.endSession();
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        console.error('Create Order Error:', err);
+        res.status(500).json({ success: false, message: 'Server error: ' + err.message });
     }
 };
 
@@ -107,39 +99,30 @@ exports.getMyOrders = async (req, res) => {
 // @access  Private
 exports.getOrderDetails = async (req, res) => {
     try {
-        // Get order info
+        const { id } = req.params;
+        console.log(`Fetching details for order: ${id}`);
+
         const order = await Order.findOne({
-            _id: req.params.id,
+            _id: id,
             user_id: req.user.id
         });
 
         if (!order) {
-            return res.status(404).json({ message: 'Order not found' });
+            console.warn(`Order not found: ${id}`);
+            return res.status(404).json({ success: false, message: 'Đơn hàng không tồn tại!' });
         }
 
-        // Get order items
-        const items = await OrderDetail.find({ order_id: order._id })
+        const details = await OrderDetail.find({ order_id: order._id })
             .populate('product_id', 'name image_url');
 
-        const itemsData = items.map(item => ({
-            _id: item._id,
-            order_id: item.order_id,
-            product_id: item.product_id._id,
-            quantity: item.quantity,
-            price: item.price,
-            name: item.product_id.name,
-            image_url: item.product_id.image_url
-        }));
+        console.log(`Found ${details.length} items for order ${id}`);
 
         res.status(200).json({
             success: true,
-            data: {
-                ...order.toObject(),
-                items: itemsData
-            }
+            data: { order, details }
         });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
+        console.error('Get Order Details Error:', err);
+        res.status(500).json({ success: false, message: 'Lỗi server: ' + err.message });
     }
 };
