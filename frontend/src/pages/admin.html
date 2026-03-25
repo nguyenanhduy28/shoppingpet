@@ -232,6 +232,27 @@
             </form>
         </div>
     </div>
+    
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <h3 id="catModalTitle">Thêm danh mục mới</h3>
+            <form id="categoryForm">
+                <input type="hidden" id="catId">
+                <div class="form-group">
+                    <label>Tên danh mục</label>
+                    <input type="text" id="catName" required>
+                </div>
+                <div class="form-group">
+                    <label>Mô tả</label>
+                    <textarea id="catDesc" rows="3"></textarea>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary" style="flex:1">Lưu</button>
+                    <button type="button" class="btn btn-secondary" style="flex:1" onclick="closeModal('categoryModal')">Hủy</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script src="../js/script.js"></script>
     <script src="../js/admin.js"></script>

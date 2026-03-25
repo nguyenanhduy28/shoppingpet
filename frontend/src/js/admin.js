@@ -178,6 +178,91 @@ window.editProduct = async (id) => {
     }
 };
 
+// ==================== CATEGORIES ====================
+async function fetchAdminCategories() {
+    try {
+        const res = await fetch(CAT_API_URL);
+        const result = await res.json();
+        if (result.success) {
+            const tbody = document.getElementById('categoryTableBody');
+            tbody.innerHTML = result.data.map(c => `
+                <tr>
+                    <td>${c._id.slice(-6)}</td>
+                    <td>${c.name}</td>
+                    <td>${c.description || ''}</td>
+                    <td>
+                        <button class="btn-sm btn-edit" onclick="editCategory('${c._id}')">Sửa</button>
+                        <button class="btn-sm btn-delete" onclick="deleteCategory('${c._id}')">Xóa</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+    } catch (err) { console.error(err); }
+}
+
+window.showAddCategoryModal = () => {
+    document.getElementById('catModalTitle').textContent = 'Thêm danh mục mới';
+    document.getElementById('categoryForm').reset();
+    document.getElementById('catId').value = '';
+    document.getElementById('categoryModal').style.display = 'flex';
+};
+
+document.getElementById('categoryForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('catId').value;
+    const data = {
+        name: document.getElementById('catName').value,
+        description: document.getElementById('catDesc').value
+    };
+
+    const method = id ? 'PUT' : 'POST';
+    const url = id ? `${CAT_API_URL}/${id}` : CAT_API_URL;
+
+    try {
+        const res = await fetch(url, {
+            method,
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` 
+            },
+            body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if (result.success) {
+            alert(id ? 'Cập nhật thành công!' : 'Thêm mới thành công!');
+            closeModal('categoryModal');
+            fetchAdminCategories();
+        }
+    } catch (err) { console.error(err); }
+});
+
+window.editCategory = async (id) => {
+    const res = await fetch(`${CAT_API_URL}`);
+    const result = await res.json();
+    if(result.success) {
+        const c = result.data.find(cat => cat._id === id);
+        if(c) {
+            showAddCategoryModal();
+            document.getElementById('catModalTitle').textContent = 'Chỉnh sửa danh mục';
+            document.getElementById('catId').value = c._id;
+            document.getElementById('catName').value = c.name;
+            document.getElementById('catDesc').value = c.description || '';
+        }
+    }
+};
+
+window.deleteCategory = async (id) => {
+    if(!confirm('Xóa danh mục này có thể ảnh hưởng đến các sản phẩm liên quan. Bạn chắc chứ?')) return;
+    try {
+        const res = await fetch(`${CAT_API_URL}/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await res.json();
+        if (result.success) fetchAdminCategories();
+    } catch (err) { console.error(err); }
+};
+
 // ==================== ORDERS ====================
 async function fetchAdminOrders() {
     try {
