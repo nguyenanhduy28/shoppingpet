@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopPet - Cửa Hàng Thú Cưng Uy Tín</title>
+    <meta name="description" content="ShopPet - Cung cấp đồ dùng và phụ kiện cho thú cưng chất lượng cao">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="src/css/styles.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">🐾</span>
+                    <h1>ShopPet</h1>
+                </div>
+                <nav class="nav">
+                    <a href="index.html" class="nav-link active">Sản phẩm</a>
+                    <a href="src/pages/orders.html" class="nav-link">Đơn hàng</a>
+                    <div id="authLinks" style="display: flex; gap: 15px;">
+                        <a href="src/pages/login.html" class="nav-link">Đăng nhập</a>
+                        <a href="src/pages/register.html" class="nav-link">Đăng ký</a>
+                    </div>
+                </nav>
+                <div class="header-actions">
+                    <div class="search-bar">
+                        <input type="text" id="searchInput" placeholder="Tìm kiếm thú cưng, phụ kiện...">
+                        <button id="searchBtn">🔍</button>
+                    </div>
+                    <button class="btn-icon" onclick="location.href='src/pages/cart.html'" aria-label="Giỏ hàng">
+                        <span class="cart-icon">🛒</span>
+                        <span class="cart-badge">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h2 class="hero-title">Mọi Thứ Cho Thú Cưng Của Bạn</h2>
+                <p class="hero-subtitle">Chất lượng cao - Giá cả phải chăng - Giao hàng nhanh chóng</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main">
+        <div class="container">
+            <div class="content-layout">
+                <!-- Sidebar Filter -->
+                <aside class="sidebar">
+                    <div class="filter-section">
+                        <h3 class="filter-title">Danh Mục</h3>
+                        <div class="category-list">
+                            <button class="category-item active" data-category="all">
+                                <span class="category-icon">🌟</span>
+                                <span>Tất cả</span>
+                            </button>
+                            <button class="category-item" data-category="dog">
+                                <span class="category-icon">🐕</span>
+                                <span>Chó</span>
+                            </button>
+                            <button class="category-item" data-category="cat">
+                                <span class="category-icon">🐱</span>
+                                <span>Mèo</span>
+                            </button>
+                            <button class="category-item" data-category="bird">
+                                <span class="category-icon">🐦</span>
+                                <span>Chim</span>
+                            </button>
+                            <button class="category-item" data-category="fish">
+                                <span class="category-icon">🐠</span>
+                                <span>Cá</span>
+                            </button>
+                            <button class="category-item" data-category="hamster">
+                                <span class="category-icon">🐹</span>
+                                <span>Hamster</span>
+                            </button>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- Product Grid -->
+                <section class="products-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Sản Phẩm Nổi Bật</h2>
+                        <p class="section-subtitle" id="product-count">12 sản phẩm</p>
+                    </div>
+                    <div class="product-grid" id="productGrid">
+                        <!-- Products will be rendered here by JavaScript -->
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="logo">
+                        <span class="logo-icon">🐾</span>
+                        <h3>ShopPet</h3>
+                    </div>
+                    <p class="footer-text">Cửa hàng thú cưng uy tín, cung cấp sản phẩm chất lượng cao cho bạn bè bốn chân của bạn.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Liên Hệ</h4>
+                    <p class="footer-text">📞 Hotline: 1900 xxxx</p>
+                    <p class="footer-text">📧 Email: contact@shoppet.vn</p>
+                    <p class="footer-text">📍 Địa chỉ: Hà Nội, Việt Nam</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Giờ Làm Việc</h4>
+                    <p class="footer-text">Thứ 2 - Thứ 6: 8:00 - 20:00</p>
+                    <p class="footer-text">Thứ 7 - Chủ Nhật: 9:00 - 18:00</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 ShopPet. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="src/js/script.js"></script>
+</body>
+</html>
