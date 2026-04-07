@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh Toán - ShopPet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        .checkout-layout { display: grid; grid-template-columns: 1fr 400px; gap: 30px; padding: 40px 0; }
+        .checkout-form { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; }
+        .order-summary { background: #f8f9fa; padding: 30px; border-radius: 8px; height: fit-content; }
+        .summary-title { margin-top: 0; padding-bottom: 15px; border-bottom: 1px solid #ddd; }
+        .item-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 0.95rem; }
+        .total-row { display: flex; justify-content: space-between; margin-top: 20px; padding-top: 15px; border-top: 2px solid #ddd; font-weight: 700; color: #ff6b6b; font-size: 1.2rem; }
+        .btn-order { width: 100%; padding: 15px; background: #2ecc71; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 20px; font-size: 1.1rem; }
+        .btn-order:hover { background: #27ae60; }
+    </style>
+</head>
+<body>
+    <!-- Header (Same as others) -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo" onclick="location.href='../../index.html'" style="cursor:pointer">
+                    <span class="logo-icon">🐾</span>
+                    <h1>ShopPet</h1>
+                </div>
+                <nav class="nav">
+                    <a href="../../index.html" class="nav-link">Sản phẩm</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main container">
+        <h2 class="section-title">Thông Tin Thanh Toán</h2>
+        <div class="checkout-layout">
+            <div class="checkout-form">
+                <h3>Địa chỉ giao hàng</h3>
+                <form id="orderForm">
+                    <div class="form-group">
+                        <label>Họ và tên</label>
+                        <input type="text" id="fullName" required placeholder="Nhập họ tên người nhận">
+                    </div>
+                    <div class="form-group">
+                        <label>Số điện thoại</label>
+                        <input type="tel" id="phone" required placeholder="Nhập số điện thoại">
+                    </div>
+                    <div class="form-group">
+                        <label>Địa chỉ nhận hàng</label>
+                        <textarea id="address" rows="3" required placeholder="Địa chỉ chi tiết (Số nhà, đường, phường/xã...)"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Ghi chú</label>
+                        <textarea id="note" rows="2" placeholder="Ghi chú cho shipper..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Phương thức thanh toán</label>
+                        <div style="padding: 10px; border: 1px solid #ddd; border-radius: 6px; background: #fdfdfd;">
+                            <input type="radio" checked> Thanh toán khi nhận hàng (COD)
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="order-summary">
+                <h3 class="summary-title">Đơn hàng của bạn</h3>
+                <div id="summaryItems">
+                    <!-- Items will be loaded here -->
+                </div>
+                <div class="total-row">
+                    <span>Tổng cộng:</span>
+                    <span id="totalPrice">0đ</span>
+                </div>
+                <button type="submit" form="orderForm" class="btn-order">XÁC NHẬN ĐẶT HÀNG</button>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/script.js"></script>
+    <script>
+        let cartItems = [];
+        let total = 0;
+
+        async function initCheckout() {
+            const token = localStorage.getItem('token');
+            if (!token) { location.href = '../../index.html'; return; }
+
+            try {
+                // Debug logs
+                console.log('API_URL:', typeof API_URL !== 'undefined' ? API_URL : 'UNDEFINED');
+                console.log('Token exists:', !!token);
+
+                // Get current profile to pre-fill
+                const resProfile = await fetch(`${API_URL}/auth/profile`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const profile = await resProfile.json();
+                if(profile.success) {
+                    document.getElementById('fullName').value = profile.data.full_name || '';
+                    document.getElementById('phone').value = profile.data.phone || '';
+                    document.getElementById('address').value = profile.data.address || '';
+                }
+
+                // Get cart items for summary
+                const resCart = await fetch(`${API_URL}/cart`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const cart = await resCart.json();
+                if(cart.success) {
+                    cartItems = cart.data;
+                    if (cartItems.length === 0) {
+                        alert('Giỏ hàng của bạn đang trống!');
+                        location.href = 'cart.html';
+                        return;
+                    }
+                    renderSummary();
+                }
+            } catch (err) { 
+                console.error('Checkout Init Error:', err);
+                alert('Lỗi kết nối máy chủ: ' + err.message);
+            }
+        }
+
+        function renderSummary() {
+            const container = document.getElementById('summaryItems');
+            total = 0;
+            container.innerHTML = cartItems.map(item => {
+                const subtotal = item.subtotal || (item.price * item.quantity) || 0;
+                total += subtotal;
+                return `
+                    <div class="item-row">
+                        <span>${item.name} x ${item.quantity}</span>
+                        <span>${formatPrice(subtotal)}</span>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('totalPrice').textContent = formatPrice(total);
+        }
+
+        document.getElementById('orderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const token = localStorage.getItem('token');
+            const orderData = {
+                shipping_address: document.getElementById('address').value,
+                phone: document.getElementById('phone').value
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/orders`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify(orderData)
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('Đặt hàng thành công! Mã đơn hàng của bạn là: #' + result.orderId.slice(-6));
+                    location.href = 'orders.html';
+                } else {
+                    alert('Lỗi: ' + result.message);
+                }
+            } catch (err) {
+                console.error('Order Submission Error:', err);
+                alert('Đã xảy ra lỗi khi đặt hàng.');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', initCheckout);
+    </script>
+</body>
+</html>

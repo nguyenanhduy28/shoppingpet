@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ Hàng - ShopPet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        .cart-container { padding: 40px 0; }
+        .cart-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .cart-table th, .cart-table td { padding: 20px; text-align: left; border-bottom: 1px solid #eee; }
+        .cart-table th { background: #f8f9fa; font-weight: 600; }
+        .cart-item-info { display: flex; align-items: center; gap: 15px; }
+        .cart-item-img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; }
+        .qty-input { width: 60px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; text-align: center; }
+        .btn-remove { color: #dc3545; background: none; border: none; cursor: pointer; font-weight: 500; }
+        .cart-summary { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); width: 100%; max-width: 400px; margin-left: auto; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 1.1rem; }
+        .summary-total { font-weight: 700; border-top: 2px solid #eee; padding-top: 15px; font-size: 1.3rem; color: #ff6b6b; }
+        .btn-checkout { width: 100%; padding: 15px; background: #ff6b6b; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 20px; }
+        .btn-checkout:hover { background: #fa5252; }
+        .empty-cart { text-align: center; padding: 100px 0; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo" onclick="location.href='../../index.html'" style="cursor:pointer">
+                    <span class="logo-icon">🐾</span>
+                    <h1>ShopPet</h1>
+                </div>
+                <nav class="nav">
+                    <a href="../../index.html" class="nav-link">Sản phẩm</a>
+                    <a href="orders.html" class="nav-link">Đơn hàng</a>
+                    <div id="authLinks" style="display: flex; gap: 15px;">
+                        <a href="login.html" class="nav-link">Đăng nhập</a>
+                        <a href="register.html" class="nav-link">Đăng ký</a>
+                    </div>
+                </nav>
+                <div class="header-actions">
+                    <button class="btn-icon" onclick="location.href='cart.html'">
+                        <span class="cart-icon">🛒</span>
+                        <span class="cart-badge">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main container cart-container">
+        <h2 class="section-title">Giỏ Hàng Của Bạn</h2>
+        <div id="cartContent">
+            <!-- Cart items will be loaded here -->
+            <div class="loading">Đang tải giỏ hàng...</div>
+        </div>
+    </main>
+
+    <script src="../js/script.js"></script>
+    <script>
+        // Special logic for cart page
+        async function loadCart() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Vui lòng đăng nhập để xem giỏ hàng!');
+                location.href = 'index.html'; // Or login page when ready
+                return;
+            }
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/api/cart', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await response.json();
+
+                if (result.success) {
+                    renderCart(result.data);
+                }
+            } catch (err) {
+                console.error('Error loading cart:', err);
+            }
+        }
+
+        function renderCart(items) {
+            const container = document.getElementById('cartContent');
+            if (items.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-cart">
+                        <h3>Giỏ hàng trống</h3>
+                        <p>Hãy chọn cho mình những người bạn bốn chân thật đáng yêu nhé!</p>
+                        <button class="btn btn-primary" onclick="location.href='../../index.html'" style="margin-top:20px">Tiếp tục mua sắm</button>
+                    </div>
+                `;
+                return;
+            }
+
+            let total = 0;
+            const itemsHtml = items.map(item => {
+                const subtotal = item.subtotal || (item.price * item.quantity) || 0;
+                total += subtotal;
+                return `
+                    <tr>
+                        <td>
+                            <div class="cart-item-info">
+                                <img src="${item.image_url}" class="cart-item-img">
+                                <div>
+                                    <h4 style="margin:0">${item.name}</h4>
+                                    <p style="margin:5px 0 0; color:#666">${formatPrice(item.price)}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <input type="number" class="qty-input" value="${item.quantity}" min="1" max="${item.stock}" 
+                                onchange="updateQty('${item.cart_id}', this.value)">
+                        </td>
+                        <td>${formatPrice(subtotal)}</td>
+                        <td>
+                            <button class="btn-remove" onclick="removeItem('${item.cart_id}')">Xóa</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <table class="cart-table">
+                    <thead>
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th>Số lượng</th>
+                            <th>Thành tiền</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>${itemsHtml}</tbody>
+                </table>
+                <div class="cart-summary">
+                    <div class="summary-row">
+                        <span>Tạm tính:</span>
+                        <span>${formatPrice(total)}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Phí vận chuyển:</span>
+                        <span>Miễn phí</span>
+                    </div>
+                    <div class="summary-row summary-total">
+                        <span>Tổng cộng:</span>
+                        <span>${formatPrice(total)}</span>
+                    </div>
+                    <button class="btn-checkout" onclick="location.href='checkout.html'">TIẾN HÀNH ĐẶT HÀNG</button>
+                </div>
+            `;
+            
+            // Update badge
+            const badge = document.querySelector('.cart-badge');
+            if(badge) badge.textContent = items.reduce((sum, item) => sum + item.quantity, 0);
+        }
+
+        async function updateQty(cartId, newQty) {
+            const token = localStorage.getItem('token');
+            try {
+                await fetch(`http://127.0.0.1:5000/api/cart/${cartId}`, {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ quantity: parseInt(newQty) })
+                });
+                loadCart();
+            } catch (err) { console.error(err); }
+        }
+
+        async function removeItem(cartId) {
+            if(!confirm('Xóa sản phẩm này khỏi giỏ hàng?')) return;
+            const token = localStorage.getItem('token');
+            try {
+                await fetch(`http://127.0.0.1:5000/api/cart/${cartId}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                loadCart();
+            } catch (err) { console.error(err); }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadCart);
+    </script>
+</body>
+</html>
