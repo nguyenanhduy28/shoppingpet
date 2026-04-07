@@ -138,7 +138,6 @@
             <button id="custom-alert-ok-btn">OK</button>
         </div>
     </div>
-
     <script src="../js/script.js"></script>
     <script>
         let cartItems = [];
@@ -157,7 +156,6 @@
                 if (callback) callback();
             };
         }
-
         async function initCheckout() {
             const token = localStorage.getItem('token');
             if (!token) { location.href = '../../index.html'; return; }
